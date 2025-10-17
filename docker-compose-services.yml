@@ -1,0 +1,86 @@
+services:
+  pg-database:
+    container_name: pg-database
+    image: postgres:17
+    restart: unless-stopped
+    command: -c 'max_connections=1000'
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    volumes:
+      - "postgres_data:/var/lib/postgresql/data:rw"
+    ports:
+      - 5433:5432
+    networks:
+      - shared_network
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+          cpus: '1.0'
+
+  pg-admin:
+    container_name: pg-admin
+    restart: unless-stopped
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin:rw
+    ports:
+      - 8002:80
+    networks:
+      - shared_network
+    depends_on:
+      - pg-database
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: '0.2'
+  
+  redis:
+    image: redis:latest
+    container_name: redis
+    # command: redis-server --requirepass ${REDIS_PASSWORD:-strongpassword} --user default on ${REDIS_PASSWORD:-strongpassword} ~* +@all
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - shared_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: '0.3'
+
+volumes:
+  postgres_data:
+    name: postgres_data
+    external: true
+
+  pgadmin_data:
+    name: pgadmin_data
+    external: true
+  
+  redis_data:
+    name: redis_data
+    external: true
+
+networks:
+  shared_network:
+    external: true

@@ -1,0 +1,25 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package.json and package-lock.json
+COPY package*.json ./
+
+# Install dependencies
+RUN npm cache clean --force
+
+RUN npm install --legacy-peer-deps
+
+RUN npx next --version
+
+# Copy the rest of the frontend code
+COPY . ./
+
+# Build the app
+RUN npm run build
+
+# Expose the port the app will run on
+EXPOSE 3015
+
+# Start the Next.js app in production mode using npx to ensure next is in path
+CMD ["npm", "run", "start"]

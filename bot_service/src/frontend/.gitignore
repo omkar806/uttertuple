@@ -1,0 +1,31 @@
+# Node modules
+/node_modules
+
+# Next.js build output
+/.next
+/frontend/.next
+/out
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+.env.test
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode
+.idea
+
+# Vercel
+/.vercel
+
+# Coverage
+/coverage
+
+# Misc
+*.log
